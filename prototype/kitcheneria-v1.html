@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kitcheneria</title>
+<style>
+:root{--bg:#fffaf3;--card:#fff;--tx:#2b1d14;--mu:#7a6a5c;--ac:#c2410c;--ac2:#fde4d3;--bd:#ecdccb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1511;--card:#271e18;--tx:#f5ebe0;--mu:#b7a898;--ac:#fb923c;--ac2:#3a2618;--bd:#3d2f25;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c1511;--card:#271e18;--tx:#f5ebe0;--mu:#b7a898;--ac:#fb923c;--ac2:#3a2618;--bd:#3d2f25;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:10px 16px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--bg);z-index:5}
+header .t{display:flex;justify-content:space-between;align-items:center}
+nav{display:flex;gap:4px;overflow-x:auto;margin-top:4px}nav a{padding:4px 10px;border-radius:99px;color:var(--tx);text-decoration:none;white-space:nowrap;font-size:15px}nav a.on{background:var(--ac);color:#fff}
+h1{font:700 22px Georgia,serif;margin:0;color:var(--ac)}h2{font:700 20px Georgia,serif;margin:24px 0 8px}
+main{max-width:800px;margin:0 auto;padding:12px 16px 100px}footer{text-align:center;padding:20px 16px 80px;border-top:1px solid var(--bd)}
+a{color:var(--ac)}.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:8px 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sp{justify-content:space-between}.dc{display:flex;gap:10px;align-items:center}
+button,select,input,textarea,.btn{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px 10px}
+input,select,textarea{width:100%;margin:3px 0 8px}input[type=checkbox]{width:auto;margin:0}
+button,.btn{cursor:pointer;text-decoration:none;display:inline-block}button.p,.btn.p{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600}
+button:disabled{opacity:.5}button.g{background:none}.mu{color:var(--mu);font-size:14px}.tag{background:var(--ac2);color:var(--ac);border-radius:99px;padding:1px 8px;font-size:13px;font-weight:600}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin:10px 0}.tabs button.on{background:var(--ac);color:#fff}
+.tot{font-weight:700;font-size:18px}.warn{background:var(--ac2);border-radius:8px;padding:8px 10px;font-size:14px;margin:8px 0}
+.th{width:48px;height:48px;object-fit:cover;border-radius:8px}.big{width:84px;height:84px}
+.hero{position:relative;border-radius:16px;overflow:hidden;min-height:230px;background:var(--ac2);display:flex;align-items:flex-end}.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hv{position:relative;padding:20px;width:100%}.hero.hi .hv{background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff}.hero h2{font-size:30px;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}
+.fab{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--bd);z-index:6}
+#toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:8px 16px;border-radius:99px;display:none;z-index:9}
+#pr{display:none}@media print{body>header,body>main,body>footer,#toast{display:none!important}#pr{display:block!important;background:#fff;color:#000}}
+</style></head><body>
+<header><div class="t"><h1 id="bz">Kitcheneria</h1><span id="hr"></span></div><nav id="nv"></nav></header>
+<main id="app"></main><footer id="ft" class="mu"></footer><div id="pr"></div><div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script id="seed" type="application/json">null</script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const key=a=>a.slice().sort().join("+");
+const PR=`Chicken & Vegetables 110|Pork & Vegetables 110|Chicken & Chicken 120|Chicken & Pork 120|Pork & Pork 130|Beef & Vegetables 130|Beef & Chicken 130|Beef & Pork 130|Beef & Seafood 160|Chicken & Seafood 140|Pork & Seafood 140|Seafood & Vegetables 140|Chicken & Chicken & Vegetables 145|Chicken & Pork & Vegetables 145|Beef & Beef 150|Seafood & Seafood 150|Pork & Pork & Vegetables 150|Beef & Chicken & Vegetables 165|Beef & Pork & Vegetables 165|Chicken & Seafood & Vegetables 165|Pork & Seafood & Vegetables 165|Beef & Seafood & Vegetables 185|Beef & Beef & Vegetables 185|Seafood & Seafood & Vegetables 185`;
+// SAMPLE content: replace everything in Back Office
+const defCfg=()=>({v:0,biz:"Kitcheneria",tag:"Fresh meals packed in bento boxes with rice.",addr:"",tin:"",cur:"₱",ac:"",foot:"Thank you for your order!",
+ hero:{t:"Home-style meals, packed fresh",s:"Bento combos and party trays for every occasion.",im:""},
+ about:{t:"Our story",x:"Tell customers who you are, how Kitcheneria started and what makes your food special.\n\nEdit this text in Back Office > Website.",im:""},gal:[],
+ hours:"Mon–Sat, 9AM–6PM (sample)",map:"",
+ faq:[{q:"Can I change my order after sending it?",a:"Yes. Open the Order page, tap Edit this order, change what you need and send the updated order."},{q:"What if a dish is not available?",a:"Unavailable dishes are marked on the menu. If a dish in your order becomes unavailable you’ll be asked to replace it."}],
+ lead:2,minH:3,rush:0,dp:70,
+ cats:[["Chicken",1],["Pork",1],["Beef",1],["Seafood",1],["Vegetables",1],["Desserts",0]].map(x=>({n:x[0],c:x[1]})),
+ dishes:[["Chicken Adobo","Chicken",0],["Fried Chicken","Chicken",0],["Pork Sisig","Pork",0],["Lechon Kawali","Pork",10],["Beef Caldereta","Beef",0],["Beef Tapa","Beef",0],["Garlic Shrimp","Seafood",0],["Fried Fish","Seafood",0],["Chopsuey","Vegetables",0],["Pinakbet","Vegetables",0],["Leche Flan","Desserts",50],["Halo-halo","Desserts",70]].map((d,i)=>({id:"d"+i,n:d[0],c:d[1],s:d[2],a:1,im:"",ds:""})),
+ combos:PR.split("|").map(s=>{const m=s.match(/^(.*) (\d+)$/);return{c:m[1].split(" & ").concat(["","",""]).slice(0,3),p:+m[2]}}),
+ trays:[10,20,30,40,50].map(n=>({n,p:0,ds:"",im:""})),areas:[{n:"Sample Area A",f:30},{n:"Sample Area B",f:50}],
+ ch:{viber:"",fb:"",sms:""},mode:{pickup:1,delivery:1},pays:[{n:"GCash",d:"09XX XXX XXXX · Account name"},{n:"Bank transfer",d:"Bank · Account no. · Account name"}]});
+// ---- data layer (swap for a real backend later) ----
+let SEED=null;try{SEED=JSON.parse($("#seed").textContent)}catch(e){}
+const mem={};
+const L=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):(mem[k]??d)}catch(e){return mem[k]??d}};
+const S=(k,v)=>{mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const getCfg=()=>{const a=L("kc_cfg3",null),b=SEED;return {...defCfg(),...((a&&(!b||a.v>=b.v))?a:(b||{}))}};
+const setCfg=c=>{c.v=Date.now();S("kc_cfg3",c)};
+const getOrders=()=>L("kc_orders3",[]),setOrders=o=>S("kc_orders3",o);
+// -----------------------------------------------------
+let cfg=getCfg(),cart=L("kc_cart3",[]),cb={n:2,sel:[]},tray={i:0,sel:{}},tab="orders",F={},LO=L("kc_last3",null),editing=false;
+const sc=()=>S("kc_cart3",cart);
+const sv=f=>{const c=getCfg();f(c);setCfg(c);cfg=c};
+const gp=p=>p.split(".").reduce((a,k)=>a?.[k],cfg);
+const sp=(p,v)=>sv(c=>{const k=p.split("."),l=k.pop();k.reduce((a,x)=>a[x],c)[l]=v});
+const m=n=>cfg.cur+Number(n).toLocaleString();
+const im=(s,c)=>s?`<img class="${c}" src="${s}" alt="">`:"";
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const no=o=>"KC-"+String(o.no).padStart(4,"0"),inv=o=>"INV-"+String(o.no).padStart(4,"0"),ref=o=>o.no?no(o):o.id;
+const fdt=w=>new Date(w).toLocaleString([],{dateStyle:"medium",timeStyle:"short"});
+function toast(t){const e=$("#toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",1600)}
+const cmCats=()=>cfg.cats.filter(c=>c.c).map(c=>c.n);
+const bad=it=>(it.ids||[]).some(id=>{const d=cfg.dishes.find(x=>x.id==id);return !d||!d.a});
+const notice=()=>`<div class="warn"><b>Pre-orders only</b> (daily orders are coming soon). Please order at least ${cfg.lead} days ahead. Later orders (down to ${cfg.minH} hours before) need a ${cfg.rush?m(cfg.rush)+" ":""}rush fee. We start preparing once your ${cfg.dp}% down payment is received; the balance is paid on delivery day.</div>`;
+
+// ============ ROUTER ============
+const PG={};
+function render(){cfg=getCfg();document.title=cfg.biz;$("#bz").textContent=cfg.biz;
+ if(cfg.ac)document.documentElement.style.setProperty("--ac",cfg.ac);else document.documentElement.style.removeProperty("--ac");
+ const r=(location.hash||"#home").slice(1);scrollTo(0,0);
+ if(r=="admin"){$("#nv").innerHTML="";$("#hr").innerHTML='<a href="#home" class="mu">← Website</a>';$("#ft").innerHTML="";return admin()}
+ $("#hr").innerHTML="";const N=[["home","Home"],["menu","Menu"],["trays","Party trays"],["about","About"],["contact","Contact"],["order","Order"]];
+ $("#nv").innerHTML=N.map(n=>`<a href="#${n[0]}" class="${(PG[r]?r:"home")==n[0]?"on":""}">${n[1]}${n[0]=="order"?' <span id="cn"></span>':""}</a>`).join("");badge();
+ (PG[r]||PG.home)();$("#ft").innerHTML=`<b>${esc(cfg.biz)}</b><br>${esc(cfg.addr)}${cfg.addr?"<br>":""}${esc(cfg.hours)}`}
+const badge=()=>{const e=$("#cn");if(e){const n=cart.reduce((a,c)=>a+c.q,0);e.textContent=n?`(${n})`:""}};
+addEventListener("hashchange",render);
+
+// ============ WEBSITE PAGES ============
+PG.home=()=>{const h=cfg.hero,av=cfg.dishes.filter(d=>d.a).sort((a,b)=>!!b.im-!!a.im).slice(0,6);
+ $("#app").innerHTML=`<section class="hero ${h.im?"hi":""}">${im(h.im,"")}<div class="hv"><h2>${esc(h.t)}</h2><p>${esc(h.s)}</p><a class="btn p" href="#menu">See the menu</a> <a class="btn" href="#order" style="color:var(--tx)">Order now</a></div></section>${notice()}
+ <h2>How to order</h2><div class="card">1. Browse the menu and build your combos or party trays.<br>2. Pick your delivery or pickup date (at least ${cfg.lead} days ahead).<br>3. Pay the ${cfg.dp}% down payment by ${cfg.pays.map(p=>esc(p.n)).join(" or ")}.<br>4. Send your order to us by ${["Viber","Facebook Messenger","SMS"].join(", ")}. We start once the down payment is confirmed.<br>5. Pay the balance on delivery day.</div>
+ <h2>Favorites</h2><div class="grid">${av.map(d=>`<div class="card" style="padding:8px">${im(d.im,"")}<b>${esc(d.n)}</b></div>`).join("")}</div><p><a href="#menu">View full menu →</a></p>
+ ${cfg.gal.length?`<h2>Gallery</h2><div class="grid">${cfg.gal.map(g=>im(g,"")).join("")}</div>`:""}
+ <h2>${esc(cfg.about.t)}</h2><p>${esc(cfg.about.x.split("\n\n")[0])}</p><a href="#about">More about us →</a>`};
+PG.menu=()=>{const cm=cmCats(),cd=cfg.dishes.filter(d=>d.a&&cm.includes(d.c));
+ const ns=[...new Set(cfg.combos.map(x=>x.c.filter(Boolean).length))].filter(Boolean).sort();if(!ns.includes(cb.n))cb.n=ns[0]||2;
+ const opts=`<option value="">Choose a dish…</option>`+cm.map(c=>`<optgroup label="${esc(c)}">${cd.filter(d=>d.c==c).map(d=>`<option value="${d.id}">${esc(d.n)}${d.s?` (+${d.s})`:""}</option>`).join("")}</optgroup>`).join("");
+ const dr=(d,c)=>`<div class="card dc" style="${d.a?"":"opacity:.55"}">${im(d.im,"th big")}<div style="flex:1"><b>${esc(d.n)}</b> ${!d.a?'<span class="tag">Not available now</span>':c.c&&d.s?`<span class="tag">+${m(d.s)} in combos</span>`:""}<div class="mu">${esc(d.ds)}</div></div>${c.c||!d.a?"":`<div style="text-align:right"><b>${m(d.s)}</b><br><button class="p" onclick="addIt('${d.id}')">Add</button></div>`}</div>`;
+ $("#app").innerHTML=`<h2 style="margin-top:8px">Menu</h2>${notice()}
+ ${ns.length?`<div class="card"><b>Build your combo</b> <span class="mu">(you can repeat a dish)</span><div class="row" style="margin:8px 0">${ns.map(n=>`<button class="${cb.n==n?"p":""}" onclick="cb={n:${n},sel:[]};PG.menu()">${n} dishes</button>`).join("")}</div>
+ ${Array.from({length:cb.n},(_,i)=>`<select data-s="${i}" onchange="cb.sel[${i}]=this.value;upd()">${opts}</select>`).join("")}<div id="cbOut" class="mu"></div>
+ <details><summary class="mu">See all combo prices</summary>${cfg.combos.map(x=>`<div class="mu">${esc(x.c.filter(Boolean).join(" + "))} — ${m(x.p)}</div>`).join("")}</details></div>`:""}
+ ${cfg.cats.map(c=>{const l=cfg.dishes.filter(d=>d.c==c.n);return l.length?`<h2>${esc(c.n)}</h2>${l.map(d=>dr(d,c)).join("")}`:""}).join("")}`;
+ cb.sel.forEach((v,i)=>{const s=document.querySelector(`[data-s="${i}"]`);if(s)s.value=v});upd()};
+function comboPrice(){const ds=Array.from({length:cb.n},(_,i)=>cfg.dishes.find(d=>d.id==cb.sel[i]));if(ds.some(d=>!d))return null;
+ const o={};cfg.combos.forEach(x=>{const k=x.c.filter(Boolean);if(k.length)o[key(k)]=+x.p});const b=o[key(ds.map(d=>d.c))];
+ if(b==null)return{err:"This combination isn’t offered. Try different dishes."};const s=ds.reduce((a,d)=>a+(+d.s||0),0);return{b,s,t:b+s,ds}}
+function upd(){const r=comboPrice(),o=$("#cbOut");if(!o)return;
+ if(!r)return o.innerHTML=`Pick ${cb.n} dishes to see the price.`;if(r.err)return o.innerHTML=`<div class="warn">${r.err}</div>`;
+ o.innerHTML=`<div class="row sp"><span class="mu">Combo ${m(r.b)}${r.s?` + add-ons ${m(r.s)}`:""}</span><span class="tot">${m(r.t)}</span></div><button class="p" onclick="addCombo()">Add to order</button>`}
+function addC(it){const f=cart.find(x=>x.d==it.d&&x.p==it.p);f?f.q++:cart.push({...it,q:1});sc();badge();toast("Added to your order ✓")}
+function addIt(id){const d=cfg.dishes.find(x=>x.id==id);addC({d:d.n,p:+d.s,t:"Item",ids:[id]})}
+function addCombo(){const r=comboPrice();if(!r||r.err)return;addC({d:"Combo: "+r.ds.map(d=>d.n).join(" + "),p:r.t,t:"Combo",ids:r.ds.map(d=>d.id)});cb.sel=[];document.querySelectorAll("[data-s]").forEach(s=>s.value="");upd()}
+PG.trays=()=>{const cd=cfg.dishes.filter(d=>d.a&&cmCats().includes(d.c));if(!cfg.trays[tray.i])tray.i=0;const t=cfg.trays[tray.i];
+ $("#app").innerHTML=`<h2 style="margin-top:8px">Party trays</h2>${notice()}<p class="mu">Each tray size has one fixed price. Choose any dishes you like.</p>
+ ${cfg.trays.map((x,i)=>`<div class="card dc">${im(x.im,"th big")}<div style="flex:1"><b>${x.n} pax</b> · ${x.p?m(x.p):"ask for a quote"}<div class="mu">${esc(x.ds)}</div></div><button class="${tray.i==i?"p":""}" onclick="tray.i=${i};tray.sel={};PG.trays()">${tray.i==i?"Selected":"Select"}</button></div>`).join("")}
+ ${t?`<h2>Choose dishes for the ${t.n} pax tray</h2><div class="card">${cd.map(d=>`<label class="row"><input type="checkbox" data-td="${d.id}" ${tray.sel[d.id]?"checked":""}> ${esc(d.n)} <span class="mu">${esc(d.c)}</span></label>`).join("")}<div id="trOut" style="margin-top:8px"></div></div>`:""}`;
+ document.querySelectorAll("[data-td]").forEach(e=>e.onchange=()=>{tray.sel[e.dataset.td]=e.checked;trOut()});trOut()};
+function trOut(){const o=$("#trOut"),t=cfg.trays[tray.i];if(!o||!t)return;const ids=Object.keys(tray.sel).filter(k=>tray.sel[k]);
+ o.innerHTML=t.p?`<div class="row sp"><span class="tot">${m(t.p)}</span><button class="p" ${ids.length?"":"disabled"} onclick="addTray()">Add tray to order</button></div>`:`<div class="warn">Price not set yet. Please message us for a quote.</div>`}
+function addTray(){const t=cfg.trays[tray.i],ids=Object.keys(tray.sel).filter(k=>tray.sel[k]);addC({d:`${t.n} pax tray: `+ids.map(i=>cfg.dishes.find(d=>d.id==i).n).join(", "),p:+t.p,t:"Tray",ids});tray.sel={};document.querySelectorAll("[data-td]").forEach(e=>e.checked=false);trOut()}
+PG.about=()=>{$("#app").innerHTML=`<h2 style="margin-top:8px">${esc(cfg.about.t)}</h2>${im(cfg.about.im,"").replace("<img",'<img style="width:100%;border-radius:12px"')}${cfg.about.x.split("\n\n").map(p=>`<p>${esc(p)}</p>`).join("")}${cfg.gal.length?`<h2>Gallery</h2><div class="grid">${cfg.gal.map(g=>im(g,"")).join("")}</div>`:""}`};
+function chBtns(){const c=cfg.ch,ios=/iPhone|iPad/.test(navigator.userAgent),vb=(c.viber||"").replace(/\D/g,""),sm=(c.sms||"").replace(/\s/g,"");
+ return `${vb?`<a class="btn p" href="viber://chat?number=${vb}">Viber</a>`:""} ${c.fb?`<a class="btn p" target="_blank" rel="noopener" href="https://m.me/${encodeURIComponent(c.fb)}">Messenger</a>`:""} ${sm?`<a class="btn p" href="sms:${sm}">SMS</a>`:""}`}
+PG.contact=()=>{$("#app").innerHTML=`<h2 style="margin-top:8px">Contact &amp; info</h2><div class="card"><b>Hours</b><br>${esc(cfg.hours)}<br><br><b>Location</b><br>${esc(cfg.addr)||"—"}${cfg.map?`<br><a target="_blank" rel="noopener" href="${esc(cfg.map)}">Open map</a>`:""}<br><br><b>Message us</b><br><div class="row" style="margin-top:6px">${chBtns()||"—"}</div></div>
+ <h2>Payments</h2><div class="card">${cfg.pays.map(p=>`<b>${esc(p.n)}</b><br><span class="mu">${esc(p.d)}</span><br>`).join("")}</div><h2>FAQ</h2>${cfg.faq.map(f=>`<div class="card"><b>${esc(f.q)}</b><div class="mu">${esc(f.a)}</div></div>`).join("")}`};
+
+// ============ ORDER PAGE ============
+const inputDT=w=>new Date(w-new Date(w).getTimezoneOffset()*6e4).toISOString().slice(0,16);
+function calc(){const sub=cart.reduce((a,c)=>a+c.p*c.q,0),del=$("#md")?.value=="delivery",fee=del?(cfg.areas[$("#ar")?.value]?.f||0):0,tm=$("#tm")?.value,w=tm?new Date(tm).getTime():NaN,hrs=(w-Date.now())/36e5;
+ const isRush=!isNaN(w)&&hrs>=cfg.minH&&hrs<cfg.lead*24,rush=isRush?+cfg.rush:0,total=sub+fee+rush,dp=Math.ceil(total*cfg.dp/100);return{sub,fee,w,hrs,isRush,rush,total,dp,bal:total-dp}}
+const fv=i=>esc(F[i]||"");
+PG.order=()=>{if(!cart.length){editing=false;return $("#app").innerHTML=`<h2 style="margin-top:8px">Your order</h2>${notice()}${LO?conf(LO,"Your last order"):`<p class="mu">Your order is empty. <a href="#menu">Browse the menu</a> or <a href="#trays">party trays</a>.</p>`}`}
+ const bd=cart.some(bad);
+ $("#app").innerHTML=`<h2 style="margin-top:8px">${editing?`Edit order ${LO.id}`:"Your order"}</h2>${notice()}${editing?`<div class="warn">You’re editing a sent order. After saving, send the updated order to us again. If the new down payment is higher, send the difference and enter the new reference no.</div>`:""}
+ <div class="card">${cart.map((c,i)=>`<div class="row sp" style="margin-bottom:6px"><span style="flex:1">${esc(c.d)}${bad(c)?' <span class="tag">No longer available, please remove</span>':""}</span><span class="row"><button onclick="qt(${i},-1)">−</button><b>${c.q}</b><button onclick="qt(${i},1)">+</button><span style="min-width:72px;text-align:right">${m(c.p*c.q)}</span></span></div>`).join("")}</div>
+ <div class="card"><label class="mu">Name</label><input id="nm" value="${fv("nm")}" oninput="F.nm=this.value"><label class="mu">Phone</label><input id="ph" inputmode="tel" value="${fv("ph")}" oninput="F.ph=this.value">
+ <label class="mu">Pickup or delivery?</label><select id="md" onchange="F.md=this.value;fee()">${cfg.mode.pickup?'<option value="pickup">Pickup</option>':""}${cfg.mode.delivery?'<option value="delivery">Delivery</option>':""}</select>
+ <div id="dv" style="display:none"><label class="mu">Area</label><select id="ar" onchange="F.ar=this.value;fee()">${cfg.areas.map((a,i)=>`<option value="${i}">${esc(a.n)} (+${m(a.f)})</option>`).join("")}</select><label class="mu">Full address</label><textarea id="ad" rows="2" oninput="F.ad=this.value">${fv("ad")}</textarea></div>
+ <label class="mu">Date &amp; time needed</label><input type="datetime-local" id="tm" value="${fv("tm")}" onchange="F.tm=this.value;fee()"><div id="rs"></div>
+ <label class="mu">Notes (optional)</label><input id="nt" value="${fv("nt")}" oninput="F.nt=this.value"></div>
+ <div class="card"><b>Down payment</b><div id="sm" style="margin:6px 0"></div><label class="mu">Pay with</label><select id="pm" onchange="F.pm=this.value;pd()">${cfg.pays.map((p,i)=>`<option value="${i}">${esc(p.n)}</option>`).join("")}</select><div class="warn" id="pd"></div>
+ <label class="mu">Payment reference no.</label><input id="rf" value="${fv("rf")}" oninput="F.rf=this.value"></div>
+ <div class="fab"><button class="p" style="width:100%" ${bd?"disabled":""} onclick="place()">${editing?"Save &amp; send updated order":"Review &amp; send order"}</button></div>`;
+ if(F.md)$("#md").value=F.md;if(F.ar)$("#ar").value=F.ar;if(F.pm)$("#pm").value=F.pm;fee();pd()};
+function pd(){const p=cfg.pays[$("#pm").value];$("#pd").innerHTML=p?`Send your down payment to:<br><b>${esc(p.n)}</b> · ${esc(p.d)}`:""}
+function fee(){const c=calc();$("#dv").style.display=$("#md").value=="delivery"?"block":"none";
+ $("#rs").innerHTML=!isNaN(c.w)&&c.hrs<cfg.minH?`<div class="warn">Please choose a time at least ${cfg.minH} hours from now.</div>`:c.isRush?`<div class="warn"><b>Rush order.</b> We normally take orders ${cfg.lead} days ahead. Ordering later adds a ${cfg.rush?m(cfg.rush)+" ":""}rush fee.<label class="row"><input type="checkbox" ${F.ag?"checked":""} onchange="F.ag=this.checked"> I agree to the rush fee</label></div>`:"";
+ $("#sm").innerHTML=`Subtotal ${m(c.sub)}${c.fee?`<br>Delivery ${m(c.fee)}`:""}${c.rush?`<br>Rush fee ${m(c.rush)}`:""}<br><b>Total ${m(c.total)}</b><br>Down payment (${cfg.dp}%) to send now: <span class="tot">${m(c.dp)}</span><br><span class="mu">Balance on delivery day: ${m(c.bal)}</span>`}
+function qt(i,d){cart[i].q+=d;if(cart[i].q<1)cart.splice(i,1);sc();badge();PG.order()}
+function place(){const g=i=>($("#"+i).value||"").trim(),c=calc(),del=g("md")=="delivery";
+ if(!g("nm")||!g("ph")||!g("tm")||(del&&!g("ad")))return alert("Please fill in your name, phone, date & time"+(del?" and address":"")+".");
+ if(c.hrs<cfg.minH)return alert("Please choose a time at least "+cfg.minH+" hours from now.");
+ if(c.isRush&&!F.ag)return alert("Please agree to the rush fee to continue, or choose a later date.");
+ if(!g("rf"))return alert("Please send the down payment first, then enter the payment reference number.");
+ const o={id:editing?LO.id:"K"+Date.now().toString(36).toUpperCase().slice(-6),rev:editing?(LO.rev||1)+1:1,at:Date.now(),name:g("nm"),ph:g("ph"),mode:g("md"),area:del?cfg.areas[$("#ar").value]?.n:"",addr:g("ad"),when:c.w,note:g("nt"),pm:cfg.pays[$("#pm").value]?.n||"",ref:g("rf"),items:cart,sub:c.sub,fee:c.fee,rush:c.rush,total:c.total,dp:c.dp,bal:c.bal};
+ LO=o;S("kc_last3",o);cart=[];sc();F={};editing=false;badge();$("#app").innerHTML=`<h2 style="margin-top:8px">One last step</h2>`+conf(o,"Send your order to us")}
+function msgOf(o){return `${cfg.biz} PRE-ORDER ${o.id}${o.rev>1?` (UPDATED ORDER, revision ${o.rev})`:""}\nName: ${o.name}\nPhone: ${o.ph}\n${o.mode=="delivery"?`Delivery: ${o.area} - ${o.addr}`:"Pickup"}\nDate/time: ${fdt(o.when)}\n\n`+o.items.map(i=>`${i.q}x ${i.d} - ${m(i.p*i.q)}`).join("\n")+`${o.fee?`\nDelivery fee: ${m(o.fee)}`:""}${o.rush?`\nRush fee: ${m(o.rush)}`:""}\nTOTAL: ${m(o.total)}\nDown payment ${cfg.dp}%: ${m(o.dp)} via ${o.pm}, ref ${o.ref}\nBalance on delivery: ${m(o.bal)}${o.note?`\nNote: ${o.note}`:""}\n\nOrder code (do not edit): KC2:`+enc(o)}
+function conf(o,t){const ms=msgOf(o),c=cfg.ch,ios=/iPhone|iPad/.test(navigator.userAgent),vb=(c.viber||"").replace(/\D/g,""),sm=(c.sms||"").replace(/\s/g,"");window.LM=ms;
+ return `<div class="card"><b>${t}</b> · ${o.id}${o.rev>1?` (revision ${o.rev})`:""}<p>${m(o.total)} total · for ${fdt(o.when)}<br><b>Your order isn’t received until you send it to us</b> using a button below. We start preparing after your ${m(o.dp)} down payment is confirmed.</p>
+ <div class="row">${vb?`<a class="btn p" href="viber://chat?number=${vb}" onclick="cp()">Viber</a>`:""}${c.fb?`<a class="btn p" target="_blank" rel="noopener" href="https://m.me/${encodeURIComponent(c.fb)}" onclick="cp()">Facebook Messenger</a>`:""}${sm?`<a class="btn p" href="sms:${sm}${ios?"&":"?"}body=${encodeURIComponent(ms)}">SMS</a>`:""}</div>
+ ${(vb||c.fb)?`<p class="mu">Your order is copied automatically. If the chat opens empty, paste it and send.</p>`:""}${!(vb||c.fb||sm)?`<div class="warn">The shop hasn’t set up its contact channels yet.</div>`:""}
+ <textarea id="ms" rows="8" readonly>${esc(ms)}</textarea><div class="row"><button onclick="cp(1)">Copy order</button><button onclick="editOrder()">Edit this order</button><button onclick="printDoc(LO,'sum')">Print</button><button onclick="saveDoc(LO,'sum')">Save as Word</button></div></div>`}
+function cp(v){const t=$("#ms");try{navigator.clipboard.writeText(window.LM).catch(()=>{t.select();document.execCommand("copy")})}catch(e){t.select();try{document.execCommand("copy")}catch(x){}}if(v)toast("Copied ✓")}
+function editOrder(){cart=JSON.parse(JSON.stringify(LO.items));F={nm:LO.name,ph:LO.ph,md:LO.mode,ad:LO.addr,tm:inputDT(LO.when),nt:LO.note,rf:LO.ref,ar:String(Math.max(0,cfg.areas.findIndex(a=>a.n==LO.area))),pm:String(Math.max(0,cfg.pays.findIndex(p=>p.n==LO.pm)))};editing=true;sc();badge();PG.order()}
+
+// ============ DOCUMENTS ============
+function doc(o,t){const L=[],d=fdt(o.at),w=fdt(o.when),rf=ref(o);
+ if(t=="slip"){L.push(["ORDER SLIP","hb"],[rf+(o.rev>1?" (revision "+o.rev+")":""),"b"],["Placed: "+d],["Needed: "+w,"b"],[o.name+" · "+o.ph],[o.mode=="delivery"?"DELIVERY - "+o.area+": "+o.addr:"PICKUP"],[""]);o.items.forEach(i=>L.push([i.q+" x "+i.d,"b"]));if(o.note)L.push([""],["Note: "+o.note]);L.push([""],[o.dpOk?"Down payment received":"DOWN PAYMENT NOT YET CONFIRMED","b"]);return L}
+ L.push([cfg.biz,"hbc"]);if(cfg.addr)L.push([cfg.addr,"c"]);if(cfg.tin)L.push(["TIN: "+cfg.tin,"c"]);
+ L.push([t=="inv"?"SALES INVOICE "+inv(o):"ORDER SUMMARY "+rf,"hb"],["Date: "+d],[(o.mode=="delivery"?"Delivery":"Pickup")+" date: "+w],["Customer: "+o.name+" · "+o.ph]);if(o.mode=="delivery")L.push(["Address: "+o.addr]);L.push([""]);
+ o.items.forEach(i=>L.push([i.q+" x "+i.d+" @ "+m(i.p)+" = "+m(i.p*i.q)]));L.push([""],["Subtotal: "+m(o.sub)]);
+ if(o.fee)L.push(["Delivery fee: "+m(o.fee)]);if(o.rush)L.push(["Rush fee: "+m(o.rush)]);
+ L.push(["TOTAL: "+m(o.total),"b"],["Down payment ("+cfg.dp+"%): "+m(o.dp)+(t=="inv"?(o.dpOk?" - received":" - awaiting"):"")],["Balance due on delivery day: "+m(o.bal),"b"]);
+ if(t=="inv")L.push([o.balOk?"PAID IN FULL":"Balance unpaid","b"]);L.push([""],[cfg.foot,"c"]);return L}
+function printDoc(o,t){$("#pr").innerHTML=`<div style="max-width:420px;margin:auto;font:14px system-ui;padding:12px">`+doc(o,t).map(([s,f=""])=>`<p style="margin:3px 0;${f.includes("b")?"font-weight:700;":""}${f.includes("h")?"font-size:20px;":""}${f.includes("c")?"text-align:center;":""}">${esc(s)||"&nbsp;"}</p>`).join("")+`</div>`;setTimeout(()=>print(),60)}
+async function saveDoc(o,t){const dl=window.claude?await claude.use("downloads"):null;if(!dl||!window.JSZip){toast("Saving isn’t available here, opening print instead");return printDoc(o,t)}
+ const z=new JSZip(),x=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+ const body=doc(o,t).map(([s,f=""])=>`<w:p><w:pPr>${f.includes("c")?'<w:jc w:val="center"/>':""}</w:pPr><w:r><w:rPr>${f.includes("b")?"<w:b/>":""}${f.includes("h")?'<w:sz w:val="32"/>':""}</w:rPr><w:t xml:space="preserve">${x(s)}</w:t></w:r></w:p>`).join("");
+ z.file("[Content_Types].xml",'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+ z.file("_rels/.rels",'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+ z.file("word/document.xml",`<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}</w:body></w:document>`);
+ try{await dl.save({filename:`${t}-${ref(o)}.docx`,data:await z.generateAsync({type:"blob"})})}catch(e){if(e.code!="declined")alert("Couldn’t save the file ("+(e.code||e.message)+"). Try Print instead.")}}
+
+// ============ BACK OFFICE ============
+const STS=["Awaiting down payment","Confirmed","Preparing","Ready","Out for delivery","Done","Cancelled"],ord=id=>getOrders().find(x=>x.id==id);
+function admin(){const T=[["orders","Orders"],["menu","Menu"],["combos","Combo prices"],["web","Website"],["settings","Settings"]];
+ $("#app").innerHTML=`<div class="warn">Changes are saved in this browser. Tap <b>Publish to customers</b> so the website updates for everyone. <button class="p" onclick="pub()">Publish to customers</button></div><div class="tabs">${T.map(t=>`<button class="${tab==t[0]?"on":""}" onclick="tab='${t[0]}';admin()">${t[1]}</button>`).join("")}</div><div id="pane"></div>`;
+ ({orders:ordersP,menu:menuP,combos:combosP,web:webP,settings:setP})[tab]()}
+async function pub(){const a=window.claude?await claude.use("artifact"):null;
+ if(!a)return alert("Publishing is only available to the page owner, from your Claude account.");
+ try{const r=document.documentElement.cloneNode(true);["#app","#hr","#pr","#nv","#ft"].forEach(s=>r.querySelector(s).innerHTML="");r.removeAttribute("style");
+ r.querySelector("#seed").textContent=JSON.stringify(getCfg()).replace(/</g,"\\u003c");await a.publish("<!DOCTYPE html>\n"+r.outerHTML)}catch(e){alert("Publish failed: "+(e.message||e.code||e))}}
+function imp(){const t=$("#pi").value,k=t.match(/KC2:([A-Za-z0-9+\/=]+)/);if(!k)return alert("No order code found. Paste the whole message, including the last line.");
+ let o;try{o=JSON.parse(decodeURIComponent(escape(atob(k[1]))))}catch(e){return alert("The order code looks damaged. Ask the customer to resend it.")}
+ const l=getOrders(),e=l.find(x=>x.id==o.id);
+ if(e){if((o.rev||1)<=(e.rev||1))return alert("This order (revision "+e.rev+") was already added.");Object.assign(e,o,{no:e.no,st:e.st,dpOk:e.dpOk,balOk:e.balOk})}
+ else l.push({...o,no:l.length?Math.max(...l.map(x=>x.no))+1:1,st:"Awaiting down payment",dpOk:0,balOk:0});setOrders(l);ordersP()}
+function ordersP(){const o=getOrders().slice().reverse();
+ $("#pane").innerHTML=`<div class="card"><b>Add a received order</b><div class="mu">Paste the customer’s message from Viber, Messenger or SMS. Updated orders replace the earlier version. The order slip and invoice are created automatically.</div><textarea id="pi" rows="4"></textarea><button class="p" onclick="imp()">Add order</button></div>`+
+ (o.length?o.map(x=>`<div class="card"><div class="row sp"><b>${no(x)} · ${inv(x)}${x.rev>1?` <span class="tag">updated · rev ${x.rev}</span>`:""}</b><span class="tag">${x.mode}</span></div><div class="mu">${esc(x.name)} · ${esc(x.ph)} · needed ${fdt(x.when)}</div>
+ ${x.items.map(i=>`<div>• ${i.q}× ${esc(i.d)}</div>`).join("")}${x.mode=="delivery"?`<div class="mu">${esc(x.area)}: ${esc(x.addr)}</div>`:""}${x.note?`<div class="mu">Note: ${esc(x.note)}</div>`:""}
+ <div class="row sp" style="margin-top:6px"><span class="tot">${m(x.total)}</span><span class="mu">Down payment ${m(x.dp)} via ${esc(x.pm)} · ref ${esc(x.ref)}${x.rush?" · rush fee included":""}</span></div>
+ <div class="row" style="margin:6px 0"><label class="row"><input type="checkbox" ${x.dpOk?"checked":""} onchange="ox('${x.id}','dpOk',this.checked?1:0)"> Down payment received</label><label class="row"><input type="checkbox" ${x.balOk?"checked":""} onchange="ox('${x.id}','balOk',this.checked?1:0)"> Paid in full</label></div>
+ <div class="row"><select style="width:auto;margin:0" onchange="ox('${x.id}','st',this.value)">${STS.map(s=>`<option ${s==x.st?"selected":""}>${s}</option>`).join("")}</select><button onclick="printDoc(ord('${x.id}'),'slip')">Print slip</button><button onclick="printDoc(ord('${x.id}'),'inv')">Print invoice</button><button onclick="saveDoc(ord('${x.id}'),'slip')">Slip .docx</button><button onclick="saveDoc(ord('${x.id}'),'inv')">Invoice .docx</button><button class="g" onclick="od('${x.id}')">✕</button></div></div>`).join(""):`<p class="mu">No orders yet.</p>`)}
+function ox(id,k,v){const l=getOrders(),o=l.find(x=>x.id==id);o[k]=v;if(k=="dpOk"&&v&&o.st==STS[0])o.st="Confirmed";setOrders(l);ordersP()}
+function od(id){if(confirm("Delete this order?")){setOrders(getOrders().filter(x=>x.id!=id));ordersP()}}
+// generic field helpers (path-based)
+const fld=(l,p,t)=>`<label class="mu">${l}</label><input ${t||""} value="${esc(gp(p))}" onchange="sp('${p}',this.type=='number'?+this.value:this.value)">`;
+const tfld=(l,p,r)=>`<label class="mu">${l}</label><textarea rows="${r||3}" onchange="sp('${p}',this.value)">${esc(gp(p))}</textarea>`;
+const imf=(p,mx)=>{const v=gp(p);return v?`${im(v,"th big")} <button class="g" onclick="sp('${p}','');admin()">remove photo</button>`:`<label class="btn">📷 Add photo (optional)<input type="file" accept="image/*" style="display:none" onchange="upi('${p}',${mx},this.files[0])"></label>`};
+function upi(p,mx,f,cb2){if(!f)return;const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{const s=Math.min(1,mx/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);const u=c.toDataURL("image/jpeg",.72);if(cb2)cb2(u);else{sp(p,u);admin()}};i.src=r.result};r.readAsDataURL(f)}
+function menuP(){$("#pane").innerHTML=`<div class="mu">“Add-on / price” is the extra charge in combos for combo categories, or the item’s price for à la carte categories (like Desserts). Untick Available to mark a dish as not available.</div>`+cfg.dishes.map((d,i)=>`<div class="card"><div class="row sp">${imf("dishes."+i+".im",600)}<label class="row"><input type="checkbox" ${d.a?"checked":""} onchange="sp('dishes.${i}.a',this.checked?1:0)"> Available</label></div>${fld("Name","dishes."+i+".n")}
+ <div class="row"><div style="flex:1"><label class="mu">Category</label><select onchange="sp('dishes.${i}.c',this.value)">${cfg.cats.map(c=>`<option ${c.n==d.c?"selected":""}>${esc(c.n)}</option>`).join("")}</select></div><div style="flex:1">${fld("Add-on / price","dishes."+i+".s",'type="number"')}</div></div>${tfld("Description (optional)","dishes."+i+".ds",2)}<button class="g" onclick="if(confirm('Delete this dish?')){sv(c=>c.dishes.splice(${i},1));menuP()}">Delete dish</button></div>`).join("")+`<button class="p" onclick="sv(c=>c.dishes.push({id:'d'+Date.now(),n:'New dish',c:c.cats[0]?.n||'',s:0,a:1,im:'',ds:''}));menuP()">+ Add dish</button>`}
+function combosP(){const cc=cmCats(),sel=(x,i,j)=>`<td><select onchange="sp('combos.${i}.c.${j}',this.value)"><option value="">—</option>${cc.map(c=>`<option ${x.c[j]==c?"selected":""}>${esc(c)}</option>`).join("")}</select></td>`;
+ $("#pane").innerHTML=`<div class="mu">Each row is one allowed combination and its base price. Leave a slot as “—” for a 2-dish combo.</div><div style="overflow-x:auto"><table style="width:100%">${cfg.combos.map((x,i)=>`<tr>${sel(x,i,0)}${sel(x,i,1)}${sel(x,i,2)}<td><input type="number" style="width:80px;margin:0" value="${x.p}" onchange="sp('combos.${i}.p',+this.value)"></td><td><button class="g" onclick="sv(c=>c.combos.splice(${i},1));combosP()">✕</button></td></tr>`).join("")}</table></div><button class="p" onclick="sv(c=>c.combos.push({c:['','',''],p:0}));combosP()">+ Add combination</button>`}
+function webP(){$("#pane").innerHTML=`<div class="card"><b>Home banner</b>${fld("Headline","hero.t")}${fld("Subtitle","hero.s")}${imf("hero.im",1200)}</div>
+ <div class="card"><b>About page</b>${fld("Title","about.t")}${tfld("Text (blank line = new paragraph)","about.x",8)}${imf("about.im",1000)}</div>
+ <div class="card"><b>Gallery</b><div class="row">${cfg.gal.map((g,i)=>`<div>${im(g,"th big")}<br><button class="g" onclick="sv(c=>c.gal.splice(${i},1));webP()">remove</button></div>`).join("")}</div><label class="btn">+ Add photo<input type="file" accept="image/*" style="display:none" onchange="upi('',900,this.files[0],u=>{sv(c=>c.gal.push(u));webP()})"></label></div>
+ <div class="card"><b>Contact info</b>${fld("Opening hours","hours")}${fld("Map link (Google Maps share link)","map")}</div>
+ <div class="card"><b>FAQ</b>${cfg.faq.map((f,i)=>`${fld("Question","faq."+i+".q")}${tfld("Answer","faq."+i+".a",2)}<button class="g" onclick="sv(c=>c.faq.splice(${i},1));webP()">Delete</button><hr>`).join("")}<button onclick="sv(c=>c.faq.push({q:'New question',a:''}));webP()">+ Add question</button></div>`}
+function setP(){$("#pane").innerHTML=`<div class="card"><b>Business</b>${fld("Business name","biz")}${fld("Tagline","tag")}${fld("Address (shown on website and invoices)","addr")}${fld("TIN / business no. (optional)","tin")}${fld("Currency symbol","cur")}${fld("Invoice footer","foot")}<label class="mu">Accent color</label><input type="color" value="${cfg.ac||"#c2410c"}" onchange="sp('ac',this.value)"> <button class="g" onclick="sp('ac','');setP()">Reset color</button></div>
+ <div class="card"><b>Where customers send orders</b><div class="mu">Blank hides a channel. Viber/SMS need the country code, e.g. 639171234567. Facebook is your page username.</div>${fld("Viber number","ch.viber")}${fld("Facebook page username","ch.fb")}${fld("SMS number","ch.sms")}</div>
+ <div class="card"><b>Pre-order rules</b>${fld("Accept orders this many days ahead","lead",'type="number"')}${fld("Earliest allowed: hours from now (rush orders)","minH",'type="number"')}${fld("Rush fee (set your amount)","rush",'type="number"')}${fld("Down payment %","dp",'type="number"')}<label class="row"><input type="checkbox" ${cfg.mode.pickup?"checked":""} onchange="sp('mode.pickup',this.checked?1:0)"> Pickup</label><label class="row"><input type="checkbox" ${cfg.mode.delivery?"checked":""} onchange="sp('mode.delivery',this.checked?1:0)"> Delivery</label></div>
+ <div class="card"><b>Payment methods</b>${cfg.pays.map((p,i)=>`${fld("Name","pays."+i+".n")}${fld("Account details","pays."+i+".d")}<button class="g" onclick="sv(c=>c.pays.splice(${i},1));setP()">Delete</button><hr>`).join("")}<button onclick="sv(c=>c.pays.push({n:'New method',d:''}));setP()">+ Add method</button></div>
+ <div class="card"><b>Party trays (fixed price per size)</b>${cfg.trays.map((t,i)=>`<div class="row"><div style="flex:1">${fld("Pax","trays."+i+".n",'type="number"')}</div><div style="flex:1">${fld("Price","trays."+i+".p",'type="number"')}</div></div>${tfld("Description","trays."+i+".ds",2)}${imf("trays."+i+".im",600)} <button class="g" onclick="sv(c=>c.trays.splice(${i},1));setP()">Delete tray</button><hr>`).join("")}<button onclick="sv(c=>c.trays.push({n:60,p:0,ds:'',im:''}));setP()">+ Add tray size</button></div>
+ <div class="card"><b>Delivery areas &amp; fees</b>${cfg.areas.map((a,i)=>`<div class="row"><input style="flex:1" value="${esc(a.n)}" onchange="sp('areas.${i}.n',this.value)"><input type="number" style="width:90px" value="${a.f}" onchange="sp('areas.${i}.f',+this.value)"><button class="g" onclick="sv(c=>c.areas.splice(${i},1));setP()">✕</button></div>`).join("")}<button onclick="sv(c=>c.areas.push({n:'New area',f:0}));setP()">+ Add area</button></div>
+ <div class="card"><b>Menu categories</b><div class="mu">Untick “combo” for à la carte categories like Desserts.</div>${cfg.cats.map((x,i)=>`<div class="row"><input style="flex:1" value="${esc(x.n)}" onchange="cr(${i},this.value)"><label class="row"><input type="checkbox" ${x.c?"checked":""} onchange="sp('cats.${i}.c',this.checked?1:0)"> combo</label><button class="g" onclick="cx(${i})">✕</button></div>`).join("")}<button onclick="sv(c=>c.cats.push({n:'New category',c:0}));setP()">+ Add category</button></div>`}
+function cr(i,v){sv(c=>{const o=c.cats[i].n;c.cats[i].n=v;c.dishes.forEach(d=>{if(d.c==o)d.c=v});c.combos.forEach(x=>x.c=x.c.map(y=>y==o?v:y))})}
+function cx(i){if(cfg.dishes.some(d=>d.c==cfg.cats[i].n))return alert("Move or delete the dishes in this category first.");sv(c=>c.cats.splice(i,1));setP()}
+render();
+</script></body></html>
